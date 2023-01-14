@@ -68,15 +68,15 @@ function addToDataset() {
 
     dataset.push([curr_x_val, curr_y_val]);
     
-    const tabular_data = document.querySelector("#tabular_data");
+    const tabular_data_body = document.querySelector("#tabular_data").getElementsByTagName("tbody")[0];
     const new_row = document.createElement("tr");
     
     new_row.innerHTML = `
-        <td>${dataset[dataset.length-1][0]}</td>
-        <td>${dataset[dataset.length-1][1]}</td>
+        <td class="border border-lime-400 pl-2">${dataset[dataset.length-1][0]}</td>
+        <td class="border border-lime-400 pl-2">${dataset[dataset.length-1][1]}</td>
     `;
 
-    tabular_data.appendChild(new_row);
+    tabular_data_body.appendChild(new_row);
 }
 
 function calculatePearsonRegression() {
@@ -84,7 +84,7 @@ function calculatePearsonRegression() {
     calculateDatasetStdDev();
     calculateDatasetCovariance();
     
-    dataset_pearson_correlation = dataset_covariance/(dataset_x_std_dev * dataset_y_std_dev);
+    dataset_pearson_correlation = dataset_covariance/(dataset_x_std_dev * dataset_y_std_dev) || 0;
     
     populateValues();
 }
@@ -117,4 +117,5 @@ function calculateDatasetCovariance() {
         cov_sum += (dataset[i][0] - dataset_x_mean) * (dataset[i][1] - dataset_y_mean);
     }
     dataset_covariance = cov_sum/dataset.length;
+    console.log(dataset_covariance);
 }
