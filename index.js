@@ -77,6 +77,9 @@ function addToDataset() {
     `;
 
     tabular_data_body.appendChild(new_row);
+    X_field.value = '';
+    Y_field.value = '';
+    flickerElement('tab_data_container');
 }
 
 function calculatePearsonRegression() {
@@ -88,6 +91,8 @@ function calculatePearsonRegression() {
     
     populateValues();
     plotData();
+    flickerElement('plot');
+    flickerElement('correlation_interpretation', 1000, Infinity);
 }
 
 function calculateDatasetMean() {
@@ -119,6 +124,18 @@ function calculateDatasetCovariance() {
     }
     dataset_covariance = cov_sum/dataset.length;
     console.log(dataset_covariance);
+}
+
+function flickerElement(element, duration=300, iterations=2) {
+    console.log("animating: " + element);
+    document.getElementById(element).animate([
+        // keyframes
+        { color: '#334155', backgroundColor: '#84cc16' },
+        { color: '#84cc16', backgroundColor: 'transparent' },
+    ], {
+        duration: duration,
+        iterations: iterations
+    });
 }
 
 function plotData() {
