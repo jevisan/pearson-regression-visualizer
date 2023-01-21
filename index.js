@@ -87,6 +87,7 @@ function calculatePearsonRegression() {
     dataset_pearson_correlation = dataset_covariance/(dataset_x_std_dev * dataset_y_std_dev) || 0;
     
     populateValues();
+    plotData();
 }
 
 function calculateDatasetMean() {
@@ -118,4 +119,104 @@ function calculateDatasetCovariance() {
     }
     dataset_covariance = cov_sum/dataset.length;
     console.log(dataset_covariance);
+}
+
+function plotData() {
+    const parentContainer = document.querySelector("#plot_container");
+    const svg = d3.select("#data_plot");
+    const width = parentContainer.clientWidth;
+    const height = parentContainer.clientHeight
+
+    const maxX = Math.max(...dataset.map(x => x[0]));
+    const maxY = Math.max(...dataset.map(x => x[1]));
+
+    /**
+     * For some reason, while building the scales for x & Y axis, using height and width as range is not enough
+     * to fill the svg container.
+     * A certain value must be added (or taken) to both height and width.
+     * After visualy evaluating an amount to add that looks good for small and big screens, 
+     * it was determined this value follows a linear inverse proportion 
+     * (the smaller the screen, the more needs to be added, and viceversa).
+     * Use the d3 scaleLinear method to automatically obtain the appropiate scaling function.
+     * Then plug the value as an added value to the width and height in the scaling function to build the axis.
+     */
+    const widthScale = d3.scaleLinear().domain([240, 990]).range([600, -150]);
+    const heightScale = d3.scaleLinear().domain([130, 550]).range([280, -150]);
+
+    const xScale = d3.scaleLinear().domain([0, maxX]).range([0, width + widthScale(width)]);
+    const yScale = d3.scaleLinear().domain([0, maxY]).range([height + heightScale(height), 0]);
+
+    const g = svg.append('g')
+                .attr('transform', `translate(${maxX}, ${maxY})`); // alternative to fill container: add scale(2.5) to transform attr
+
+    const gridColor = '#65a30d';
+    const dataColor = '#84cc16';
+    const gridColorOpacity = 0.3;
+    const fontFamily = 'VT323';
+    const labelFontSize = 20;
+    const tickFontSize = 16;
+    // X label
+    svg.append('text')
+        .attr('x', width + widthScale(width) + maxX + 20)
+        .attr('y', height + heightScale(height) + maxY + 15)
+        .attr('text-anchor', 'middle')
+        .style('font-family', fontFamily)
+        .style('font-size', labelFontSize)
+        .style('fill', dataColor)
+        .text('X');
+    // Y label
+    svg.append('text')
+        .attr('text-anchor', 'middle')
+        .attr('transform', `translate(25, 40)`)
+        .style('font-family', fontFamily)
+        .style('font-size', labelFontSize)
+        .style('fill', dataColor)
+        .text('Y');
+    
+    // Bottom Axis
+    const xAxis = g.append('g')
+                    .attr('transform', `translate(0, ${height + heightScale(height)})`)
+                    .call(d3.axisBottom(xScale).tickSize(-height-heightScale(height)));
+    xAxis.select('.domain').remove();
+        // .attr('stroke', gridColor)
+        // .attr('stroke-opacity', gridColorOpacity);
+    xAxis.selectAll('.tick line')
+        .attr('stroke', gridColor)
+        .attr('stroke-opacity', gridColorOpacity);
+    xAxis.select('.tick line').remove();
+
+    xAxis.selectAll('.tick text')
+        .attr('font-family', fontFamily)
+        .attr('font-size', tickFontSize)
+        .attr('fill', gridColor)
+    xAxis.select('.tick text').remove();
+    
+    // Left Axis
+    const yAxis = g.append('g')
+                    .call(d3.axisLeft(yScale).tickSize(-width-widthScale(width)));
+    
+    yAxis.select('.domain').remove();
+        // .attr('stroke', gridColor)
+        // .attr('stroke-opacity', gridColorOpacity);
+    yAxis.selectAll('.tick line')
+        .attr('stroke', gridColor)
+        .attr('stroke-opacity', gridColorOpacity);
+    yAxis.select('.tick line').remove();
+
+    yAxis.selectAll('.tick text')
+        .attr('font-family', fontFamily)
+        .attr('font-size', tickFontSize)
+        .attr('fill', gridColor)
+
+    // DOTS
+    svg.append('g')
+        .selectAll('dot')
+        .data(dataset)
+        .enter()
+        .append('circle')
+        .attr('cx', (d) => xScale(d[0]))
+        .attr('cy', (d) => yScale(d[1]))
+        .attr('r', 4)
+        .attr('transform', `translate(${maxX}, ${maxY})`)
+        .style('fill', dataColor);
 }
